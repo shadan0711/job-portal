@@ -1,4 +1,4 @@
-e// import React from 'react';
+// import React from 'react';
 // import { motion } from 'framer-motion';
 // import { Briefcase } from 'lucide-react'; // Modern icons
 // import { Link } from 'react-router-dom';
