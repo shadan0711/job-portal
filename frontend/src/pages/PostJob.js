@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Briefcase, MapPin, IndianRupee, FileText, Send } from 'lucide-react';
+import { Briefcase , Send } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
