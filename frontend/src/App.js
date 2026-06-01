@@ -16,6 +16,9 @@ import Navbar from './components/Navbar';
 import JobDetails from './pages/JobDetails';
 import VerifyEmail from './pages/VerifyEmail';
 import PostJob from './pages/PostJob';
+import CategoryJobs from './pages/CategoryJobs';
+import JobFind from "./pages/JobFind";
+
 
 function App() {
   return (
@@ -38,6 +41,8 @@ function App() {
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/admin/jobpost" element={<PostJob />} />
+              <Route path="/jobs/:categoryName" element={<CategoryJobs />} />
+              <Route path="/jobfind/:id" element={<JobFind />} />
             </Routes>
           </div>
         </div>

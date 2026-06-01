@@ -1,0 +1,640 @@
+
+
+// import React, { useState, useEffect } from 'react';
+// import { useParams, Link, useNavigate } from 'react-router-dom';
+// import { ArrowLeft, MapPin, DollarSign, Briefcase, User, Phone, Mail, FileText, Send, X, Award, Clock, Calendar } from 'lucide-react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import toast, { Toaster } from 'react-hot-toast';
+
+// const JobFind = () => {
+//   const { id } = useParams();
+//   const navigate = useNavigate();
+
+//   const [job, setJob] = useState(null); 
+//   const [loading, setLoading] = useState(true);
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [fileError, setFileError] = useState('');
+//   const [hasApplied, setHasApplied] = useState(false); 
+  
+//   const [formData, setFormData] = useState({
+//     fullName: '',
+//     email: '',
+//     phone: '',
+//     age: '', 
+//     experience: ''
+//   });
+//   const [file, setFile] = useState(null);
+
+//   // 1. UPDATE: Fetch logic mein check daalna zaroori hai
+//   useEffect(() => {
+//     const fetchJobDetails = async () => {
+//       try {
+//         setLoading(true);
+//         const token = localStorage.getItem("token");
+
+//         const response = await fetch(`http://localhost:5000/api/v1/jobs/getjob/${id}`, {
+//           method: "GET",
+//           headers: {
+//             "Authorization": token ? `Bearer ${token}` : ""
+//           }
+//         });
+        
+//         const data = await response.json();
+        
+//         if (data.success) {
+//           setJob(data.job);
+//           // YAHAN FIX HAI: Backend se hasApplied status lijiye
+//           setHasApplied(data.hasApplied || false); 
+//         } else {
+//           setJob(null);
+//         }
+//       } catch (error) {
+//         console.error("Fetch error:", error);
+//         setJob(null);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (id) {
+//       fetchJobDetails();
+//     }
+//   }, [id]);
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleFileChange = (e) => {
+//     const selectedFile = e.target.files[0];
+//     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    
+//     if (selectedFile) {
+//       if (!allowedTypes.includes(selectedFile.type)) {
+//         setFileError('Invalid format. Please upload PDF, DOC, or DOCX.');
+//         setFile(null);
+//       } else if (selectedFile.size > 8 * 1024 * 1024) {
+//         setFileError('File is too large. Max limit is 8MB.');
+//         setFile(null);
+//       } else {
+//         setFileError('');
+//         setFile(selectedFile);
+//       }
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     const token = localStorage.getItem("token");
+
+//     if (!token) {
+//       toast.error('Please login to apply.');
+//       return;
+//     }
+
+//     if (hasApplied) {
+//       toast.error('You have already applied for this job.');
+//       setIsModalOpen(false);
+//       return;
+//     }
+
+//     const loadingToast = toast.loading('Submitting your application...');
+
+//     const data = new FormData();
+//     data.append("fullName", formData.fullName);
+//     data.append("email", formData.email);
+//     data.append("phone", formData.phone);
+//     data.append("age", formData.age);
+//     data.append("experience", formData.experience);
+//     data.append("resume", file);
+
+//     try {
+//       const response = await fetch(`http://localhost:5000/api/v1/jobs/apply/${id}`, {
+//         method: "POST",
+//         headers: {
+//           "Authorization": `Bearer ${token}`
+//         },
+//         body: data,
+//       });
+
+//       const result = await response.json();
+
+//       if (result.success) {
+//         toast.success("Application Sent Successfully!", { id: loadingToast });
+//         setIsModalOpen(false);
+//         setHasApplied(true); // Turant button change karega
+
+//         setTimeout(() => {
+//           navigate('/jobs');
+//         }, 2000);
+
+//       } else {
+//         toast.error(result.message || "Already applied.", { id: loadingToast });
+//         if (result.message?.toLowerCase().includes("already")) {
+//           setHasApplied(true); 
+//           setIsModalOpen(false);
+//         }
+//       }
+//     } catch (error) {
+//       toast.error("Server error. Please try again later.", { id: loadingToast });
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-cyan-400 font-bold animate-pulse text-xl">
+//         Loading Job Data...
+//       </div>
+//     );
+//   }
+
+//   if (!job) {
+//     return (
+//       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white text-center">
+//         <div>
+//           <h2 className="text-2xl font-bold mb-4">Job details not available.</h2>
+//           <Link to="/jobs" className="text-cyan-400 underline">Go back to all jobs</Link>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-[#0f172a] pt-32 px-6 pb-20 font-inter text-white">
+//       <Toaster position="top-center" reverseOrder={false} />
+
+//       <div className="max-w-4xl mx-auto">
+//         <Link to="/jobs" className="flex items-center gap-2 text-cyan-400 mb-8 hover:text-cyan-300 transition-colors group w-fit">
+//           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> 
+//           Back to Jobs
+//         </Link>
+
+//         <div className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-xl shadow-2xl relative overflow-hidden">
+//           <div className="flex flex-col md:flex-row justify-between items-start gap-6 relative z-10">
+//             <div>
+//               <span className="bg-cyan-500/20 text-cyan-400 px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
+//                 Verified Listing
+//               </span>
+//               <h1 className="text-4xl font-bold mt-4">{job.title}</h1>
+//               <p className="text-gray-400 mt-2 flex items-center gap-2">
+//                 <MapPin size={18} className="text-cyan-500" /> {job.location}
+//               </p>
+//             </div>
+            
+//             {/* BUTTON TOGGLE LOGIC */}
+//             {hasApplied ? (
+//               <button className="bg-amber-500/20 text-amber-500 border border-amber-500/30 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 cursor-default">
+//                 <Clock size={20} /> Applied
+//               </button>
+//             ) : (
+//               <button 
+//                 onClick={() => setIsModalOpen(true)} 
+//                 className="bg-cyan-600 hover:bg-cyan-500 px-10 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-cyan-500/20 active:scale-95"
+//               >
+//                 Apply Now
+//               </button>
+//             )}
+//           </div>
+
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-8 border-y border-white/5">
+//             <div className="flex items-center gap-4">
+//               <div className="p-3 bg-white/5 rounded-2xl text-cyan-400"><DollarSign size={24} /></div>
+//               <div className="flex flex-col">
+//                 <span className="text-gray-500 text-xs uppercase font-bold">Salary</span>
+//                 <span className="font-semibold">{job.salary}</span>
+//               </div>
+//             </div>
+//             <div className="flex items-center gap-4">
+//               <div className="p-3 bg-white/5 rounded-2xl text-cyan-400"><Briefcase size={24} /></div>
+//               <div className="flex flex-col">
+//                 <span className="text-gray-500 text-xs uppercase font-bold">Type</span>
+//                 <span className="font-semibold">{job.jobType}</span>
+//               </div>
+//             </div>
+//             <div className="flex items-center gap-4">
+//               <div className="p-3 bg-white/5 rounded-2xl text-cyan-400"><MapPin size={24} /></div>
+//               <div className="flex flex-col">
+//                 <span className="text-gray-500 text-xs uppercase font-bold">Location</span>
+//                 <span className="font-semibold">{job.location}</span>
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="mt-10">
+//             <h3 className="text-xl font-bold mb-4 text-cyan-400">About the Role</h3>
+//             <p className="text-gray-300 leading-relaxed bg-white/5 p-6 rounded-2xl border border-white/5 whitespace-pre-wrap">
+//               {job.description}
+//             </p>
+//           </div>
+//         </div>
+//       </div>
+
+//       <AnimatePresence>
+//         {isModalOpen && (
+//           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+//             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
+//             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-full max-w-xl bg-[#1e293b] border border-white/10 p-8 rounded-[2.5rem] shadow-2xl overflow-hidden">
+//               <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-white"><X size={24} /></button>
+//               <h2 className="text-2xl font-bold mb-2 text-white">Submit Application</h2>
+//               <form className="space-y-4" onSubmit={handleSubmit}>
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                   <div className="space-y-1">
+//                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+//                     <div className="relative">
+//                       <User className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+//                       <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+//                     </div>
+//                   </div>
+//                   <div className="space-y-1">
+//                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
+//                     <div className="relative">
+//                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+//                       <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                   <div className="space-y-1">
+//                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Age</label>
+//                     <div className="relative">
+//                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+//                       <input type="number" name="age" value={formData.age} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+//                     </div>
+//                   </div>
+//                   <div className="space-y-1">
+//                     <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Experience (Years)</label>
+//                     <div className="relative">
+//                       <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+//                       <input type="number" name="experience" value={formData.experience} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 <div className="space-y-1">
+//                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
+//                   <div className="relative">
+//                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+//                     <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+//                   </div>
+//                 </div>
+
+//                 <div className="space-y-1">
+//                   <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">CV / Resume</label>
+//                   <div className="relative border-2 border-dashed border-white/10 p-6 rounded-2xl bg-white/5">
+//                     <input type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" required />
+//                     <div className="flex flex-col items-center">
+//                       <FileText className={`${file ? 'text-cyan-400' : 'text-gray-500'} mb-2`} size={32} />
+//                       <p className="text-sm">{file ? file.name : "Click to upload"}</p>
+//                     </div>
+//                   </div>
+//                   {fileError && <p className="text-red-400 text-xs mt-1">{fileError}</p>}
+//                 </div>
+
+//                 <button type="submit" className="w-full bg-cyan-600 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 active:scale-95 transition-transform">
+//                   <Send size={18} /> Submit Application
+//                 </button>
+//               </form>
+//             </motion.div>
+//           </div>
+//         )}
+//       </AnimatePresence>
+//     </div>
+//   );
+// };
+
+// export default JobFind;
+
+
+
+
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, MapPin, DollarSign, Briefcase, User, Phone, Mail, FileText, Send, X, Award, Clock, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast, { Toaster } from 'react-hot-toast';
+
+const JobFind = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [job, setJob] = useState(null); 
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fileError, setFileError] = useState('');
+  const [hasApplied, setHasApplied] = useState(false); 
+  
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    age: '', 
+    experience: ''
+  });
+  const [file, setFile] = useState(null);
+
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      try {
+        setLoading(true);
+
+        // Agar CategoryJobs page se static data state me aa raha hai to pehle use state me load karein
+        if (location.state && location.state.jobData) {
+          const passedJob = location.state.jobData;
+          setJob({
+            title: passedJob.title,
+            location: passedJob.location,
+            salary: passedJob.salary,
+            jobType: passedJob.type || "Full-Time",
+            description: `This is a premium opening for a verified ${passedJob.title}. We are searching for an experienced candidate specialized in the domain to manage on-site processes, operational setups, maintenance frameworks, and coordination guidelines aligned with professional workplace standards.`
+          });
+          setHasApplied(false);
+          setLoading(false);
+          return; 
+        }
+
+        // DB Data Fetching Logic for Real API
+        const token = localStorage.getItem("token");
+        const response = await fetch(`http://localhost:5000/api/v1/jobs/getjob/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": token ? `Bearer ${token}` : ""
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setJob(data.job);
+          setHasApplied(data.hasApplied || false); 
+        } else {
+          setJob(null);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setJob(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchJobDetails();
+    }
+  }, [id, location.state]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    
+    if (selectedFile) {
+      if (!allowedTypes.includes(selectedFile.type)) {
+        setFileError('Invalid format. Please upload PDF, DOC, or DOCX.');
+        setFile(null);
+      } else if (selectedFile.size > 8 * 1024 * 1024) {
+        setFileError('File is too large. Max limit is 8MB.');
+        setFile(null);
+      } else {
+        setFileError('');
+        setFile(selectedFile);
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error('Please login to apply.');
+      return;
+    }
+
+    if (hasApplied) {
+      toast.error('You have already applied for this job.');
+      setIsModalOpen(false);
+      return;
+    }
+
+    const loadingToast = toast.loading('Submitting your application...');
+
+    const data = new FormData();
+    data.append("fullName", formData.fullName);
+    data.append("email", formData.email);
+    data.append("phone", formData.phone);
+    data.append("age", formData.age);
+    data.append("experience", formData.experience);
+    data.append("resume", file);
+
+    try {
+      // Demo state links ke liye conditional handling (elec-1 jaisi temporary ids ke liye)
+      if (id && id.includes('-')) {
+        setTimeout(() => {
+          toast.success("Application Sent Successfully! (Demo Data)", { id: loadingToast });
+          setIsModalOpen(false);
+          setHasApplied(true);
+        }, 1200);
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/v1/jobs/apply/${id}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: data,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Application Sent Successfully!", { id: loadingToast });
+        setIsModalOpen(false);
+        setHasApplied(true); 
+
+        setTimeout(() => {
+          navigate('/jobs');
+        }, 2000);
+
+      } else {
+        toast.error(result.message || "Already applied.", { id: loadingToast });
+        if (result.message?.toLowerCase().includes("already")) {
+          setHasApplied(true); 
+          setIsModalOpen(false);
+        }
+      }
+    } catch (error) {
+      toast.error("Server error. Please try again later.", { id: loadingToast });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-cyan-400 font-bold animate-pulse text-xl">
+        Loading Job Data...
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-white text-center">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Job details not available.</h2>
+          <Link to="/" className="text-cyan-400 underline">Go back to Categories</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0f172a] pt-32 px-6 pb-20 font-inter text-white">
+      <Toaster position="top-center" reverseOrder={false} />
+
+      <div className="max-w-4xl mx-auto">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-cyan-400 mb-8 hover:text-cyan-300 transition-colors group w-fit bg-transparent border-none outline-none cursor-pointer">
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> 
+          Back
+        </button>
+
+        <div className="bg-white/5 border border-white/10 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-xl shadow-2xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6 relative z-10">
+            <div>
+              <span className="bg-cyan-500/20 text-cyan-400 px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
+                Verified Listing
+              </span>
+              <h1 className="text-4xl font-bold mt-4">{job.title}</h1>
+              <p className="text-gray-400 mt-2 flex items-center gap-2">
+                <MapPin size={18} className="text-cyan-500" /> {job.location}
+              </p>
+            </div>
+            
+            {hasApplied ? (
+              <button className="bg-amber-500/20 text-amber-500 border border-amber-500/30 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 cursor-default">
+                <Clock size={20} /> Applied
+              </button>
+            ) : (
+              <button 
+                onClick={() => setIsModalOpen(true)} 
+                className="bg-cyan-600 hover:bg-cyan-500 px-10 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-cyan-500/20 active:scale-95"
+              >
+                Apply Now
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-8 border-y border-white/5">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/5 rounded-2xl text-cyan-400"><DollarSign size={24} /></div>
+              <div className="flex flex-col">
+                <span className="text-gray-500 text-xs uppercase font-bold">Salary</span>
+                <span className="font-semibold">{job.salary}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/5 rounded-2xl text-cyan-400"><Briefcase size={24} /></div>
+              <div className="flex flex-col">
+                <span className="text-gray-500 text-xs uppercase font-bold">Type</span>
+                <span className="font-semibold">{job.jobType}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/5 rounded-2xl text-cyan-400"><MapPin size={24} /></div>
+              <div className="flex flex-col">
+                <span className="text-gray-500 text-xs uppercase font-bold">Location</span>
+                <span className="font-semibold">{job.location}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10">
+            <h3 className="text-xl font-bold mb-4 text-cyan-400">About the Role</h3>
+            <p className="text-gray-300 leading-relaxed bg-white/5 p-6 rounded-2xl border border-white/5 whitespace-pre-wrap">
+              {job.description}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="relative w-full max-w-xl bg-[#1e293b] border border-white/10 p-8 rounded-[2.5rem] shadow-2xl overflow-hidden">
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-white"><X size={24} /></button>
+              <h2 className="text-2xl font-bold mb-2 text-white">Submit Application</h2>
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+                      <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+                      <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Age</label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+                      <input type="number" name="age" value={formData.age} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Experience (Years)</label>
+                    <div className="relative">
+                      <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+                      <input type="number" name="experience" value={formData.experience} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-500" size={18} />
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white" required />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">CV / Resume</label>
+                  <div className="relative border-2 border-dashed border-white/10 p-6 rounded-2xl bg-white/5">
+                    <input type="file" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" required />
+                    <div className="flex flex-col items-center">
+                      <FileText className={`${file ? 'text-cyan-400' : 'text-gray-500'} mb-2`} size={32} />
+                      <p className="text-sm">{file ? file.name : "Click to upload"}</p>
+                    </div>
+                  </div>
+                  {fileError && <p className="text-red-400 text-xs mt-1">{fileError}</p>}
+                </div>
+
+                <button type="submit" className="w-full bg-cyan-600 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                  <Send size={18} /> Submit Application
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default JobFind;
