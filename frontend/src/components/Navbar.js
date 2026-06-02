@@ -30,11 +30,11 @@ const Navbar = () => {
         </Link>
 
         {/* Find Jobs Link */}
-        <div className="hidden md:flex items-center">
+        {/* <div className="hidden md:flex items-center">
             <Link to="/jobs" className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-blue-400 transition-all">
                 <Search size={16} /> Find Jobs
             </Link>
-        </div>
+        </div> */}
 
         {/* Auth Actions */}
         <div className="flex items-center gap-4">

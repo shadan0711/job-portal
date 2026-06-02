@@ -4,40 +4,6 @@ const dotenv = require("dotenv");
 const User = require("../models/User");
 dotenv.config();
 
-// 1. AUTH MIDDLEWARE
-// exports.auth = async (req, res, next) => {
-//     try {
-//         // Extracting JWT from request cookies, body or header
-//         const token =
-//             req.cookies.token ||
-//             req.body.token ||
-//             req.header("Authorization")?.replace("Bearer ", "");
-
-//         if (!token) {
-//             return res.status(401).json({ success: false, message: `Token Missing` });
-//         }
-
-//         try {
-//             // Verifying the JWT
-//             const decode = jwt.verify(token, process.env.JWT_SECRET);
-//             console.log("Decoded Token:", decode);
-            
-//             // Storing the decoded payload (id, email, role) in req.user
-//             req.user = decode;
-//         } catch (error) {
-//             return res
-//                 .status(401)
-//                 .json({ success: false, message: "Token is invalid" });
-//         }
-
-//         next();
-//     } catch (error) {
-//         return res.status(401).json({
-//             success: false,
-//             message: `Something Went Wrong While Validating the Token`,
-//         });
-//     }
-// };
 exports.auth = async (req, res, next) => {
     try {
         const token = req.cookies?.token || 

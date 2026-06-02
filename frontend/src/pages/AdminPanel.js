@@ -1,240 +1,89 @@
 
-// import React, { useEffect, useState } from 'react';
-// import axios from 'axios';
-// import { Plus, Trash2, Users, Briefcase, FileText, ExternalLink, MapPin } from 'lucide-react';
-// import toast, { Toaster } from 'react-hot-toast';
-
-
-// import { useNavigate } from 'react-router-dom';
-
-
-
-// const AdminPanel = () => {
-//   const navigate = useNavigate();
-//   const [stats, setStats] = useState({ users: 0, jobs: 0, apps: 0 });
-//   const [applications, setApplications] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchAdminData = async () => {
-//       try {
-//         const token = localStorage.getItem('token');
-//         const res = await axios.get('http://localhost:5000/api/admin/stats', {
-//           headers: { Authorization: `Bearer ${token}` }
-//         });
-
-//         if (res.data.success) {
-//           setStats(res.data.stats);
-//           setApplications(res.data.applications);
-//         }
-//       } catch (err) {
-//         console.error("Error fetching admin stats", err);
-//         toast.error("Failed to load admin data");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchAdminData();
-//   }, []);
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
-//         <div className="text-cyan-400 font-bold animate-bounce text-xl">Accessing Admin Secure Vault...</div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-[#0f172a] text-white p-6 pt-28 max-w-7xl mx-auto">
-//       <Toaster />
-      
-//       {/* Header Section */}
-//       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
-//         <div>
-//           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-//             Admin Console
-//           </h1>
-//           <p className="text-gray-400 mt-2">Manage jobs, review user applications, and platform metrics.</p>
-//         </div>
-//         <button 
-//       onClick={() => navigate('/admin/jobpost')} // Ye line add karein
-//       className="flex items-center gap-2 bg-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-//     >
-//       <Plus size={20} /> Post New Job
-//     </button>
-//       </div>
-
-//       {/* Stats Cards */}
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-//         <StatCard label="Total Users" value={stats.users} icon={Users} color="blue" />
-//         <StatCard label="Live Jobs" value={stats.jobs} icon={Briefcase} color="emerald" />
-//         <StatCard label="Total Applications" value={stats.apps} icon={FileText} color="amber" />
-//       </div>
-
-//       {/* Applications Table */}
-//       <div className="bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-md">
-//         <div className="p-6 border-b border-white/10">
-//           <h2 className="text-xl font-bold">Recent Applications</h2>
-//         </div>
-//         <div className="overflow-x-auto">
-//           <table className="w-full text-left">
-//             <thead className="bg-white/5 text-gray-400 uppercase text-xs tracking-widest">
-//               <tr>
-//                 <th className="px-6 py-4">Candidate</th>
-//                 <th className="px-6 py-4">Applied For</th>
-//                 <th className="px-6 py-4">Exp. (Yrs)</th>
-//                 <th className="px-6 py-4">Resume</th>
-//                 <th className="px-6 py-4 text-right">Action</th>
-//               </tr>
-//             </thead>
-//             <tbody className="divide-y divide-white/5">
-//               {applications.length > 0 ? (
-//                 applications.map((app) => (
-//                   <tr key={app._id} className="hover:bg-white/5 transition-colors group">
-//                     <td className="px-6 py-4">
-//                       <div className="font-medium text-white">{app.fullName}</div>
-//                       <div className="text-xs text-gray-500">{app.email}</div>
-//                     </td>
-//                     <td className="px-6 py-4">
-//                       <div className="font-medium text-cyan-400">
-//                         {app.jobId?.title || "Unknown Job"}
-//                       </div>
-//                       <div className="text-xs text-gray-500 flex items-center gap-1">
-//                         <MapPin size={12} /> {app.jobId?.location || "N/A"}
-//                       </div>
-//                     </td>
-//                     <td className="px-6 py-4">
-//                       <span className="bg-white/5 px-3 py-1 rounded-full text-xs border border-white/10">
-//                         {app.experience} Years
-//                       </span>
-//                     </td>
-//                     <td className="px-6 py-4">
-//                       <a 
-//                         href={app.resumeUrl} 
-//                         target="_blank" 
-//                         rel="noreferrer"
-//                         className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-sm underline underline-offset-4"
-//                       >
-//                         View CV <ExternalLink size={14} />
-//                       </a>
-//                     </td>
-//                     <td className="px-6 py-4 text-right">
-//                       <button className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-//                         <Trash2 size={18} />
-//                       </button>
-//                     </td>
-//                   </tr>
-//                 ))
-//               ) : (
-//                 <tr>
-//                   <td colSpan="5" className="px-6 py-10 text-center text-gray-500">
-//                     No applications found in the database.
-//                   </td>
-//                 </tr>
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const StatCard = ({ label, value, icon: Icon, color }) => {
-//   const colorMap = {
-//     blue: "bg-blue-500/20 text-blue-400 border-blue-500/20",
-//     emerald: "bg-emerald-500/20 text-emerald-400 border-emerald-500/20",
-//     amber: "bg-amber-500/20 text-amber-400 border-amber-500/20"
-//   };
-
-//   return (
-//     <div className={`p-6 bg-white/5 border border-white/10 rounded-3xl transition-transform hover:scale-[1.02] duration-300`}>
-//       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${colorMap[color]} border`}>
-//         <Icon size={24} />
-//       </div>
-//       <p className="text-gray-400 text-sm font-medium">{label}</p>
-//       <p className="text-4xl font-bold mt-1 tracking-tight">{value}</p>
-//     </div>
-//   );
-// };
-
-// export default AdminPanel;
-
-
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Users, Briefcase, FileText, ExternalLink, MapPin, FolderPlus } from 'lucide-react';
+import { Plus, Trash2, Users, Briefcase, FileText, ExternalLink, MapPin, FolderPlus, Send, Folder } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
-  const navigate = useNavigate();
   const [stats, setStats] = useState({ users: 0, jobs: 0, apps: 0 });
   const [applications, setApplications] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Category State
-  const [categoryData, setCategoryData] = useState({
-    name: "",
-    icon: "",
-    vacancies: "",
-  });
+  const [categoryData, setCategoryData] = useState({ name: "", icon: "Zap", vacancies: "" });
+  const [jobFormData, setJobFormData] = useState({ title: '', salary: '', location: '', jobType: 'Full-Time', category: '', description: '' });
+  const [jobLoading, setJobLoading] = useState(false);
 
   useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/admin/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (res.data.success) {
-          setStats(res.data.stats);
-          setApplications(res.data.applications);
-        }
-      } catch (err) {
-        console.error("Error fetching admin stats", err);
-        toast.error("Failed to load admin data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAdminData();
+    fetchDashboardMetrics();
   }, []);
 
-  // Category Submit Handler
+  const fetchDashboardMetrics = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const res = await axios.get('http://localhost:5000/api/admin/stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setStats(res.data.stats);
+        setApplications(res.data.applications);
+      }
+
+      const catRes = await axios.get('http://localhost:5000/api/v1/category/all');
+      if (catRes.data.success) {
+        setCategoriesList(catRes.data.categories);
+      }
+    } catch (err) {
+      console.error("Dashboard Sync Delay:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const baseUrl = process.env.REACT_APP_BASE_URL || 'http://localhost:5000/api';
-      
-      await axios.post(
-        `${baseUrl}/category/create`,
-        categoryData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      toast.success("Category Created Successfully!");
-      setCategoryData({ name: "", icon: "", vacancies: "" }); // Reset Form
+      await axios.post('http://localhost:5000/api/v1/category/create', categoryData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Category created smoothly! ✨");
+      setCategoryData({ name: "", icon: "Zap", vacancies: "" });
+      fetchDashboardMetrics();
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to create category");
+      toast.error(error.response?.data?.message || "Failed execution loop");
+    }
+  };
+
+  const handleJobSubmit = async (e) => {
+    e.preventDefault();
+    if (!jobFormData.category) return toast.error("Please explicitly select a category mapping node!");
+
+    setJobLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post('http://localhost:5000/api/v1/jobs/createjob', jobFormData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        toast.success("Job posted dynamically inside system! 🚀");
+        setJobFormData({ title: '', salary: '', location: '', jobType: 'Full-Time', category: '', description: '' });
+        fetchDashboardMetrics();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Job posting caught an issue");
+    } finally {
+      setJobLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
-        <div className="text-cyan-400 font-bold animate-bounce text-xl">Accessing Admin Secure Vault...</div>
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center text-cyan-400 font-bold animate-bounce text-xl">
+        Accessing Secure Core Dashboard...
       </div>
     );
   }
@@ -242,87 +91,94 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-6 pt-28 max-w-7xl mx-auto">
       <Toaster />
-      
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
-        <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Admin Console
-          </h1>
-          <p className="text-gray-400 mt-2">Manage jobs, review user applications, and platform metrics.</p>
-        </div>
-        <button 
-          onClick={() => navigate('/admin/jobpost')}
-          className="flex items-center gap-2 bg-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-        >
-          <Plus size={20} /> Post New Job
-        </button>
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Admin Console</h1>
+        <p className="text-gray-400 mt-2">Manage jobs, create structured structural categories, and trace data loops.</p>
       </div>
 
-      {/* Create Category Form Section (Upper Area) */}
+      {/* Stats Cards Dashboard elements */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <StatCard label="Total Registrations" value={stats.users} icon={Users} color="blue" />
+        <StatCard label="Live Postings" value={stats.jobs} icon={Briefcase} color="emerald" />
+        <StatCard label="Applications Tracking" value={stats.apps} icon={FileText} color="amber" />
+      </div>
+
+      {/* Category Box */}
       <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 mb-10 backdrop-blur-md">
         <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-3">
           <FolderPlus className="text-cyan-400" size={22} />
-          <h2 className="text-xl font-bold">Create New Category</h2>
+          <h2 className="text-xl font-bold">Create New Category Cluster</h2>
         </div>
-        
         <form onSubmit={handleCategorySubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
-            <label className="block text-xs text-gray-400 font-medium mb-1.5 tracking-wider uppercase">Category Name</label>
-            <input
-              type="text"
-              placeholder="e.g. Development"
-              value={categoryData.name}
-              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
-              onChange={(e) => setCategoryData({ ...categoryData, name: e.target.value })}
-              required
-            />
+            <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Category Name</label>
+            <input type="text" value={categoryData.name} onChange={(e) => setCategoryData({ ...categoryData, name: e.target.value })} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-cyan-500" placeholder="e.g. Electrician" required />
           </div>
-
           <div>
-            <label className="block text-xs text-gray-400 font-medium mb-1.5 tracking-wider uppercase">Icon Name</label>
-            <input
-              type="text"
-              placeholder="e.g. Code"
-              value={categoryData.icon}
-              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
-              onChange={(e) => setCategoryData({ ...categoryData, icon: e.target.value })}
-              required
-            />
+            <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Icon Class Name</label>
+            <select value={categoryData.icon} onChange={(e) => setCategoryData({ ...categoryData, icon: e.target.value })} className="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 outline-none">
+              <option value="Zap">Zap (Electrician)</option>
+              <option value="Wrench">Wrench (Plumber)</option>
+              <option value="Wind">Wind (AC Tech)</option>
+              <option value="HardHat">HardHat</option>
+              <option value="Hammer">Hammer</option>
+            </select>
           </div>
-
           <div>
-            <label className="block text-xs text-gray-400 font-medium mb-1.5 tracking-wider uppercase">Vacancies</label>
-            <input
-              type="number"
-              placeholder="e.g. 12"
-              value={categoryData.vacancies}
-              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
-              onChange={(e) => setCategoryData({ ...categoryData, vacancies: e.target.value })}
-              required
-            />
+            <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Initial Vacancies</label>
+            <input type="number" value={categoryData.vacancies} onChange={(e) => setCategoryData({ ...categoryData, vacancies: e.target.value })} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 outline-none" placeholder="e.g. 0" />
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-2.5 rounded-xl hover:opacity-90 transition-opacity active:scale-[0.98]"
-          >
-            Create Category
-          </button>
+          <button type="submit" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-2.5 rounded-xl">Create Category</button>
         </form>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <StatCard label="Total Users" value={stats.users} icon={Users} color="blue" />
-        <StatCard label="Live Jobs" value={stats.jobs} icon={Briefcase} color="emerald" />
-        <StatCard label="Total Applications" value={stats.apps} icon={FileText} color="amber" />
+      {/* Opportunity Creation Box */}
+      <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] backdrop-blur-md mb-10">
+        <h2 className="text-3xl font-bold mb-6 flex items-center gap-3"><Briefcase className="text-blue-400" /> Post a New Opportunity</h2>
+        <form onSubmit={handleJobSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="text-gray-400 text-sm ml-1">Job Title</label>
+              <input required type="text" placeholder="e.g. Industrial Electrician" value={jobFormData.title} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, title: e.target.value})} />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm ml-1">Location Node</label>
+              <input required type="text" placeholder="e.g. Mumbai, IN" value={jobFormData.location} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, location: e.target.value})} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="text-gray-400 text-sm ml-1">Salary Package Structure</label>
+              <input required type="text" placeholder="e.g. ₹35,000" value={jobFormData.salary} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, salary: e.target.value})} />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm ml-1">Job Shift Type</label>
+              <select className="w-full bg-[#1e293b] border border-white/10 p-3 rounded-xl mt-1 outline-none" value={jobFormData.jobType} onChange={(e) => setJobFormData({...jobFormData, jobType: e.target.value})}>
+                <option value="Full-Time">Full-Time</option>
+                <option value="Part-Time">Part-Time</option>
+                <option value="Contract">Contract</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-gray-400 text-sm ml-1 flex items-center gap-1.5"><Folder size={16} className="text-blue-400" /> Target Job Category Dropdown</label>
+            <select required className="w-full bg-[#1e293b] border border-white/10 p-3 rounded-xl mt-1 outline-none" value={jobFormData.category} onChange={(e) => setJobFormData({...jobFormData, category: e.target.value})}>
+              <option value="">Select Category Node</option>
+              {categoriesList.map((cat) => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-gray-400 text-sm ml-1">Role Specifications Description</label>
+            <textarea required rows="4" placeholder="Describe tracking processes..." value={jobFormData.description} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, description: e.target.value})} />
+          </div>
+          <button type="submit" disabled={jobLoading} className="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">{jobLoading ? "Processing Node Posting..." : <><Send size={20}/> Publish Opening</>}</button>
+        </form>
       </div>
 
-      {/* Applications Table */}
-      <div className="bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-md">
+      {/* ✨ ADDED: Recent Applications Data Table Block */}
+      <div className="bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-md mb-10">
         <div className="p-6 border-b border-white/10">
-          <h2 className="text-xl font-bold">Recent Applications</h2>
+          <h2 className="text-xl font-bold">Recent User Applications</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -336,7 +192,7 @@ const AdminPanel = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {applications.length > 0 ? (
+              {applications && applications.length > 0 ? (
                 applications.map((app) => (
                   <tr key={app._id} className="hover:bg-white/5 transition-colors group">
                     <td className="px-6 py-4">
@@ -345,7 +201,7 @@ const AdminPanel = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-cyan-400">
-                        {app.jobId?.title || "Unknown Job"}
+                        {app.jobId?.title || "Unknown Job Role"}
                       </div>
                       <div className="text-xs text-gray-500 flex items-center gap-1">
                         <MapPin size={12} /> {app.jobId?.location || "N/A"}
@@ -376,7 +232,7 @@ const AdminPanel = () => {
               ) : (
                 <tr>
                   <td colSpan="5" className="px-6 py-10 text-center text-gray-500">
-                    No applications found in the database.
+                    No applications found in the database system loop.
                   </td>
                 </tr>
               )}
@@ -388,6 +244,7 @@ const AdminPanel = () => {
   );
 };
 
+// ✨ ADDED: Custom Animated StatCard Sub-Component Block
 const StatCard = ({ label, value, icon: Icon, color }) => {
   const colorMap = {
     blue: "bg-blue-500/20 text-blue-400 border-blue-500/20",
@@ -396,7 +253,7 @@ const StatCard = ({ label, value, icon: Icon, color }) => {
   };
 
   return (
-    <div className={`p-6 bg-white/5 border border-white/10 rounded-3xl transition-transform hover:scale-[1.02] duration-300`}>
+    <div className="p-6 bg-white/5 border border-white/10 rounded-3xl transition-transform hover:scale-[1.02] duration-300">
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${colorMap[color]} border`}>
         <Icon size={24} />
       </div>
