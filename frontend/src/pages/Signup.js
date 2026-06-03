@@ -3,23 +3,27 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast'; // Toast import kiya
+import toast from 'react-hot-toast';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); // 🔥 Added instant loading state
   const [formData, setFormData] = useState({
     fullName: '', email: '', password: '', confirmPassword: '', 
-    age: '', dob: '', role: 'Candidate' // Default role agar backend mangta hai
+    age: '', dob: '', role: 'Candidate' 
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Password matching check with Toast
+    // Password matching check
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!"); // Alert ki jagah toast
+      toast.error("Passwords do not match!");
       return;
     }
+
+    setLoading(true); // 🔥 Instant loading trigger on click!
+    const toastId = toast.loading("Sending OTP... Please wait."); // 🔥 Real-time status update
 
     try {
       const response = await fetch('http://localhost:5000/api/v1/auth/sendotp', {
@@ -31,14 +35,16 @@ const Signup = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast.success("OTP sent to your email!");
+        toast.success("OTP sent to your email!", { id: toastId });
         navigate('/verify-email', { state: { signupData: formData } });
       } else {
-        toast.error(data.message || "Failed to send OTP");
+        toast.error(data.message || "Failed to send OTP", { id: toastId });
       }
     } catch (err) {
       console.error("OTP Error:", err);
-      toast.error("Server error! Please try again.");
+      toast.error("Server error! Please try again.", { id: toastId });
+    } finally {
+      setLoading(false); // Stop loading regardless of outcome
     }
   };
 
@@ -68,12 +74,27 @@ const Signup = () => {
               value={formData.confirmPassword} onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})} />
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all">
-            Get OTP
+          {/* 🔥 Modified Button with Instant Spinner State */}
+          <button 
+            type="submit" 
+            disabled={loading}
+            className={`w-full text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 ${
+              loading ? 'bg-blue-600/50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500'
+            }`}
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Sending OTP...</span>
+              </>
+            ) : (
+              'Get OTP'
+            )}
           </button>
         </form>
       </motion.div>
     </div>
   );
 };
+
 export default Signup;
