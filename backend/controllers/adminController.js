@@ -20,3 +20,32 @@ exports.getAdminStats = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+exports.deleteApplication = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const application = await Application.findById(id);
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    await Application.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Application deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};

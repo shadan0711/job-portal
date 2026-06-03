@@ -87,12 +87,44 @@ const AdminPanel = () => {
       </div>
     );
   }
+  const handleDeleteApplication = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.delete(
+      `http://localhost:5000/api/admin/application/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.data.success) {
+      toast.success("Application deleted");
+
+      setApplications((prev) =>
+        prev.filter((item) => item._id !== id)
+      );
+
+      setStats((prev) => ({
+        ...prev,
+        apps: prev.apps - 1,
+      }));
+    }
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message ||
+      "Failed to delete application"
+    );
+  }
+};
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-6 pt-28 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#0f172a] text-white p-6 pt-18 max-w-7xl mx-auto">
       <Toaster />
       <div className="mb-10">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Admin Console</h1>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Admin Data</h1>
         <p className="text-gray-400 mt-2">Manage jobs, create structured structural categories, and trace data loops.</p>
       </div>
 
@@ -216,16 +248,19 @@ const AdminPanel = () => {
                       <a 
                         href={app.resumeUrl} 
                         target="_blank" 
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 flex items-center gap-1 text-sm underline underline-offset-4"
                       >
                         View CV <ExternalLink size={14} />
                       </a>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                        <Trash2 size={18} />
-                      </button>
+                      <button
+  onClick={() => handleDeleteApplication(app._id)}
+  className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+>
+  <Trash2 size={18} />
+</button>
                     </td>
                   </tr>
                 ))

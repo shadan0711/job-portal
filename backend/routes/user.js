@@ -13,7 +13,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/sendotp", sendotp);
 router.post("/changepassword", auth, changePassword);
-router.post("/updateProfile", auth, updateProfile);
+router.put("/updateProfile", auth, updateProfile);
 router.get("/getUserDetails", auth, getUserDetails);
 
 module.exports = router;

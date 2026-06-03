@@ -23,9 +23,10 @@ exports.getUserDetails = async (req, res) => {
     }
 };
 
+
+
 exports.updateProfile = async (req, res) => {
   try {
-    // 1. Destructure data from req.body (Aapke data fields ke mutabiq)
     const {
       fullName,
       dateOfBirth = "",
@@ -35,32 +36,42 @@ exports.updateProfile = async (req, res) => {
       age = ""
     } = req.body;
 
-    // 2. User ID fetch karein (Auth Middleware se aayegi)
     const id = req.user.id;
 
-    // 3. User details aur link ki gayi Profile dhoondein
     const userDetails = await User.findById(id);
-    const profileId = userDetails.additionalDetails;
-    const profile = await Profile.findById(profileId);
+    if (!userDetails) {
+      return res.status(404).json({ success: false, message: "User entry not found" });
+    }
 
-    // 4. User Model update karein (fullName update karne ke liye)
-    // Hum sirf tabhi update karenge agar body mein fullName bheja gaya ho
+    // FullName upadate section
     if (fullName) {
       userDetails.fullName = fullName;
       await userDetails.save();
     }
 
-    // 5. Profile Model update karein
-    profile.dateOfBirth = dateOfBirth || profile.dateOfBirth;
-    profile.about = about || profile.about;
-    profile.contactNumber = contactNumber || profile.contactNumber;
-    profile.gender = gender || profile.gender;
-    profile.age = age || profile.age;
+    let profileId = userDetails.additionalDetails;
+    let profile;
 
-    // 6. Updated Profile save karein
+    if (profileId) {
+      profile = await Profile.findById(profileId);
+    }
+
+    // 🔥 SAFE CHECK: Agar kisi wajah se database mein profile record missing ho toh crash na karein, naya bana dein
+    if (!profile) {
+      profile = new Profile({});
+      userDetails.additionalDetails = profile._id;
+      await userDetails.save();
+    }
+
+    // Sync field modifications safely
+    profile.dateOfBirth = dateOfBirth || profile.dateOfBirth || "";
+    profile.about = about || profile.about || "";
+    profile.contactNumber = contactNumber || profile.contactNumber || "";
+    profile.gender = gender || profile.gender || "";
+    profile.age = age || profile.age || "";
+
     await profile.save();
 
-    // 7. Final updated data fetch karein taaki frontend ko refresh data mile
     const updatedUserDetails = await User.findById(id)
       .populate("additionalDetails")
       .exec();
@@ -68,11 +79,11 @@ exports.updateProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      updatedUserDetails,
+      userDetails: updatedUserDetails, // React component expectations context
     });
 
   } catch (error) {
-    console.error("UPDATE PROFILE ERROR:", error);
+    console.error("UPDATE PROFILE ERROR LOG:", error);
     return res.status(500).json({
       success: false,
       message: "Unable to update profile. Please try again.",
