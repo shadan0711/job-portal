@@ -128,3 +128,5 @@ exports.applyToJob = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal application handler failure" });
     }
 };
+
+
