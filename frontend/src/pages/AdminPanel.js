@@ -11,6 +11,9 @@ const AdminPanel = () => {
   const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🛠️ Active Tab state control karne ke liye
+  const [activeTab, setActiveTab] = useState('category'); // 'category' ya 'job'
+
   const [categoryData, setCategoryData] = useState({ name: "", icon: "Zap", vacancies: "" });
   const [jobFormData, setJobFormData] = useState({ title: '', salary: '', location: '', jobType: 'Full-Time', category: '', description: '' });
   const [jobLoading, setJobLoading] = useState(false);
@@ -52,13 +55,12 @@ const AdminPanel = () => {
       });
       toast.success("Category created smoothly! ✨");
       setCategoryData({ name: "", icon: "Zap", vacancies: "" });
-      fetchDashboardMetrics(); // List reload loop
+      fetchDashboardMetrics(); 
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed execution loop");
     }
   };
 
-  // 🔥 ADDED: Delete Target Category with Cascade Alert
   const handleDeleteCategory = async (catId, catName) => {
     if (!window.confirm(`⚠️ WARNING: Kya aap sach me "${catName.toUpperCase()}" category aur iske andar ke SAARE JOBS aur APPLICATIONS ko permanent delete karna chahte hain?`)) return;
 
@@ -66,7 +68,7 @@ const AdminPanel = () => {
       const res = await axios.delete(`http://localhost:5000/api/v1/category/delete/${catId}`);
       if (res.data.success) {
         toast.success(`${catName} aur uske saare jobs saaf! 🗑️`);
-        fetchDashboardMetrics(); // Live counts and lists update loop
+        fetchDashboardMetrics(); 
       }
     } catch (error) {
       console.error(error);
@@ -135,112 +137,141 @@ const AdminPanel = () => {
         <p className="text-gray-400 mt-2">Manage jobs, create structured structural categories, and trace data loops.</p>
       </div>
 
-      {/* Stats Cards Dashboard elements */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <StatCard label="Total Registrations" value={stats.users} icon={Users} color="blue" />
         <StatCard label="Live Postings" value={stats.jobs} icon={Briefcase} color="emerald" />
         <StatCard label="Applications Tracking" value={stats.apps} icon={FileText} color="amber" />
       </div>
 
-      {/* Category Creation & Live List Box */}
-      <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 mb-10 backdrop-blur-md">
-        <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-3">
-          <FolderPlus className="text-cyan-400" size={22} />
-          <h2 className="text-xl font-bold">Manage Category Clusters</h2>
-        </div>
-        
-        {/* Creation Form */}
-        <form onSubmit={handleCategorySubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-6">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Category Name</label>
-            <input type="text" value={categoryData.name} onChange={(e) => setCategoryData({ ...categoryData, name: e.target.value })} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-cyan-500" placeholder="e.g. Electrician" required />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Icon Class Name</label>
-            <select value={categoryData.icon} onChange={(e) => setCategoryData({ ...categoryData, icon: e.target.value })} className="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 outline-none">
-              <option value="Zap">Zap (Electrician)</option>
-              <option value="Wrench">Wrench (Plumber)</option>
-              <option value="Wind">Wind (AC Tech)</option>
-              <option value="HardHat">HardHat</option>
-              <option value="Hammer">Hammer</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Initial Vacancies</label>
-            <input type="number" value={categoryData.vacancies} onChange={(e) => setCategoryData({ ...categoryData, vacancies: e.target.value })} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 outline-none" placeholder="e.g. 0" />
-          </div>
-          <button type="submit" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2"><Plus size={18}/> Create Category</button>
-        </form>
-
-        {/* 🔥 ADDED: Active Categories Grid Loop with Red Delete Buttons */}
-        <div className="border-t border-white/10 pt-4">
-          <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-3">Live System Categories ({categoriesList.length})</p>
-          {categoriesList.length === 0 ? (
-            <p className="text-gray-500 text-sm">No active categories available.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {categoriesList.map((cat) => (
-                <div key={cat._id} className="flex items-center justify-between bg-slate-900/40 border border-white/5 rounded-xl px-3 py-2 text-sm group hover:border-white/20 transition-all">
-                  <div className="overflow-hidden">
-                    <p className="capitalize font-medium text-white truncate">{cat.name}</p>
-                    <p className="text-[10px] text-gray-500">{cat.vacancies || 0} Vacancies</p>
-                  </div>
-                  <button 
-                    onClick={() => handleDeleteCategory(cat._id, cat.name)}
-                    className="text-gray-500 hover:text-red-400 hover:bg-red-500/10 p-1.5 rounded-lg transition-all"
-                    title={`Delete ${cat.name} Category`}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* 🔥 Action Buttons (Tabs System) */}
+      <div className="flex gap-4 mb-8 bg-white/5 p-2 rounded-2xl w-fit border border-white/10">
+        <button
+          onClick={() => setActiveTab('category')}
+          className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${
+            activeTab === 'category'
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/20'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <FolderPlus size={18} />
+          Create Category
+        </button>
+        <button
+          onClick={() => setActiveTab('job')}
+          className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${
+            activeTab === 'job'
+              ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/20'
+              : 'text-gray-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Briefcase size={18} />
+          New Job Post
+        </button>
       </div>
 
-      {/* Opportunity Creation Box */}
-      <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] backdrop-blur-md mb-10">
-        <h2 className="text-3xl font-bold mb-6 flex items-center gap-3"><Briefcase className="text-blue-400" /> Post a New Opportunity</h2>
-        <form onSubmit={handleJobSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="text-gray-400 text-sm ml-1">Job Title</label>
-              <input required type="text" placeholder="e.g. Industrial Electrician" value={jobFormData.title} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, title: e.target.value})} />
-            </div>
-            <div>
-              <label className="text-gray-400 text-sm ml-1">Location Node</label>
-              <input required type="text" placeholder="e.g. Mumbai, IN" value={jobFormData.location} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, location: e.target.value})} />
-            </div>
+      {/* 🔥 Conditional Rendering Sections Based on Active Tab */}
+      {activeTab === 'category' && (
+        <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 mb-10 backdrop-blur-md animate-fadeIn">
+          <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-3">
+            <FolderPlus className="text-cyan-400" size={22} />
+            <h2 className="text-xl font-bold">Manage Category Clusters</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          
+          {/* Category Creation Form */}
+          <form onSubmit={handleCategorySubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-6">
             <div>
-              <label className="text-gray-400 text-sm ml-1">Salary Package Structure</label>
-              <input required type="text" placeholder="e.g. ₹35,000" value={jobFormData.salary} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, salary: e.target.value})} />
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Category Name</label>
+              <input type="text" value={categoryData.name} onChange={(e) => setCategoryData({ ...categoryData, name: e.target.value })} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-cyan-500" placeholder="e.g. Electrician" required />
             </div>
             <div>
-              <label className="text-gray-400 text-sm ml-1">Job Shift Type</label>
-              <select className="w-full bg-[#1e293b] border border-white/10 p-3 rounded-xl mt-1 outline-none" value={jobFormData.jobType} onChange={(e) => setJobFormData({...jobFormData, jobType: e.target.value})}>
-                <option value="Full-Time">Full-Time</option>
-                <option value="Part-Time">Part-Time</option>
-                <option value="Contract">Contract</option>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Icon Class Name</label>
+              <select value={categoryData.icon} onChange={(e) => setCategoryData({ ...categoryData, icon: e.target.value })} className="w-full bg-[#1e293b] border border-white/10 rounded-xl px-4 py-2.5 outline-none">
+                <option value="Zap">Zap (Electrician)</option>
+                <option value="Wrench">Wrench (Plumber)</option>
+                <option value="Wind">Wind (AC Tech)</option>
+                <option value="HardHat">HardHat</option>
+                <option value="Hammer">Hammer</option>
               </select>
             </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1.5 uppercase font-bold">Initial Vacancies</label>
+              <input type="number" value={categoryData.vacancies} onChange={(e) => setCategoryData({ ...categoryData, vacancies: e.target.value })} className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 outline-none" placeholder="e.g. 0" />
+            </div>
+            <button type="submit" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2"><Plus size={18}/> Create Category</button>
+          </form>
+
+          {/* Active Categories Grid Loop */}
+          <div className="border-t border-white/10 pt-4">
+            <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-3">Live System Categories ({categoriesList.length})</p>
+            {categoriesList.length === 0 ? (
+              <p className="text-gray-500 text-sm">No active categories available.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {categoriesList.map((cat) => (
+                  <div key={cat._id} className="flex items-center justify-between bg-slate-900/40 border border-white/5 rounded-xl px-3 py-2 text-sm group hover:border-white/20 transition-all">
+                    <div className="overflow-hidden">
+                      <p className="capitalize font-medium text-white truncate">{cat.name}</p>
+                      <p className="text-[10px] text-gray-500">{cat.vacancies || 0} Vacancies</p>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteCategory(cat._id, cat.name)}
+                      className="text-gray-500 hover:text-red-400 hover:bg-red-500/10 p-1.5 rounded-lg transition-all"
+                      title={`Delete ${cat.name} Category`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div>
-            <label className="text-gray-400 text-sm ml-1 flex items-center gap-1.5"><Folder size={16} className="text-blue-400" /> Target Job Category Dropdown</label>
-            <select required className="w-full bg-[#1e293b] border border-white/10 p-3 rounded-xl mt-1 outline-none" value={jobFormData.category} onChange={(e) => setJobFormData({...jobFormData, category: e.target.value})}>
-              <option value="">Select Category Node</option>
-              {categoriesList.map((cat) => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-gray-400 text-sm ml-1">Role Specifications Description</label>
-            <textarea required rows="4" placeholder="Describe tracking processes..." value={jobFormData.description} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, description: e.target.value})} />
-          </div>
-          <button type="submit" disabled={jobLoading} className="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">{jobLoading ? "Processing Node Posting..." : <><Send size={20}/> Publish Opening</>}</button>
-        </form>
-      </div>
+        </div>
+      )}
+
+      {activeTab === 'job' && (
+        <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] backdrop-blur-md mb-10 animate-fadeIn">
+          <h2 className="text-3xl font-bold mb-6 flex items-center gap-3"><Briefcase className="text-blue-400" /> Post a New Opportunity</h2>
+          <form onSubmit={handleJobSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="text-gray-400 text-sm ml-1">Job Title</label>
+                <input required type="text" placeholder="e.g. Industrial Electrician" value={jobFormData.title} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, title: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-gray-400 text-sm ml-1">Location Node</label>
+                <input required type="text" placeholder="e.g. Mumbai, IN" value={jobFormData.location} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, location: e.target.value})} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="text-gray-400 text-sm ml-1">Salary Package Structure</label>
+                <input required type="text" placeholder="e.g. ₹35,000" value={jobFormData.salary} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, salary: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-gray-400 text-sm ml-1">Job Shift Type</label>
+                <select className="w-full bg-[#1e293b] border border-white/10 p-3 rounded-xl mt-1 outline-none" value={jobFormData.jobType} onChange={(e) => setJobFormData({...jobFormData, jobType: e.target.value})}>
+                  <option value="Full-Time">Full-Time</option>
+                  <option value="Part-Time">Part-Time</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm ml-1 flex items-center gap-1.5"><Folder size={16} className="text-blue-400" /> Target Job Category Dropdown</label>
+              <select required className="w-full bg-[#1e293b] border border-white/10 p-3 rounded-xl mt-1 outline-none" value={jobFormData.category} onChange={(e) => setJobFormData({...jobFormData, category: e.target.value})}>
+                <option value="">Select Category Node</option>
+                {categoriesList.map((cat) => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm ml-1">Role Specifications Description</label>
+              <textarea required rows="4" placeholder="Describe tracking processes..." value={jobFormData.description} className="w-full bg-white/5 border border-white/10 p-3 rounded-xl mt-1 outline-none focus:border-blue-500" onChange={(e) => setJobFormData({...jobFormData, description: e.target.value})} />
+            </div>
+            <button type="submit" disabled={jobLoading} className="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">{jobLoading ? "Processing Node Posting..." : <><Send size={20}/> Publish Opening</>}</button>
+          </form>
+        </div>
+      )}
 
       {/* Recent Applications Data Table Block */}
       <div className="bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-md mb-10">

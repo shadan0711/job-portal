@@ -1,4 +1,5 @@
 
+
 const Category = require("../models/Category"); // 🔥 CORRECTION: Yeh line exact aisi honi chahiye!
 const mongoose = require('mongoose');
 
@@ -6,6 +7,16 @@ const Job = require("../models/Job");
 const Application = require("../models/Application");
 const cloudinary = require("cloudinary").v2;
 const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    host: process.env.MAIL_HOST,
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+    },
+});
 
 exports.createJob = async (req, res) => {
     try {
@@ -82,32 +93,66 @@ exports.applyToJob = async (req, res) => {
         const userId = req.user.id;
 
         if (!fullName || !email || !phone || !age || !experience) {
-            return res.status(400).json({ success: false, message: "All data parameters are required" });
+            return res.status(400).json({
+                success: false,
+                message: "All data parameters are required",
+            });
         }
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ success: false, message: "Invalid key format" });
+            return res.status(400).json({
+                success: false,
+                message: "Invalid key format",
+            });
         }
 
         const job = await Job.findById(id);
-        if (!job) return res.status(404).json({ success: false, message: "Job not found" });
 
-        const alreadyApplied = await Application.findOne({ jobId: id, userId });
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found",
+            });
+        }
+
+        const alreadyApplied = await Application.findOne({
+            jobId: id,
+            userId,
+        });
+
         if (alreadyApplied) {
-            return res.status(400).json({ success: false, message: "Already applied" });
+            return res.status(400).json({
+                success: false,
+                message: "Already applied",
+            });
         }
 
         if (!req.files || !req.files.resume) {
-            return res.status(400).json({ success: false, message: "Resume document file is required" });
+            return res.status(400).json({
+                success: false,
+                message: "Resume document file is required",
+            });
         }
 
         const file = req.files.resume;
-        const result = await cloudinary.uploader.upload(file.tempFilePath, {
-            folder: "Resumes", resource_type: "auto"
-        });
+
+        const result = await cloudinary.uploader.upload(
+            file.tempFilePath,
+            {
+                folder: "Resumes",
+                resource_type: "auto",
+            }
+        );
 
         const application = await Application.create({
-            jobId: id, userId, fullName, email, phone, age, experience, resumeUrl: result.secure_url
+            jobId: id,
+            userId,
+            fullName,
+            email,
+            phone,
+            age,
+            experience,
+            resumeUrl: result.secure_url,
         });
 
         if (!job.applications.includes(userId)) {
@@ -115,18 +160,49 @@ exports.applyToJob = async (req, res) => {
             await job.save();
         }
 
-        const mailOptions = {
-            from: `"JOBFLOW Alerts" <${process.env.MAIL_USER}>`,
-            to: process.env.MAIL_USER || 'rehanmallick297@gmail.com',
-            subject: `📢 Application Received: ${fullName} applied for ${job.title}`,
-            html: `<p><b>Role:</b> ${job.title}</p><p><a href="${result.secure_url}">Download CV Document</a></p>`
-        };
-        try { await transporter.sendMail(mailOptions); } catch(e) { console.log(e); }
+        // ================= EMAIL NOTIFICATION =================
+        try {
+            await transporter.sendMail({
+                from: `"JOBFLOW Alerts" <${process.env.MAIL_USER}>`,
+                to: process.env.MAIL_USER,
+                subject: `📢 New Job Application - ${job.title}`,
+                html: `
+                    <h2>New Application Received</h2>
 
-        res.status(200).json({ success: true, message: "Application submitted smoothly!", application });
+                    <p><strong>Name:</strong> ${fullName}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Phone:</strong> ${phone}</p>
+                    <p><strong>Age:</strong> ${age}</p>
+                    <p><strong>Experience:</strong> ${experience}</p>
+
+                    <p><strong>Job:</strong> ${job.title}</p>
+
+                    <p>
+                        <a href="${result.secure_url}">
+                            Download Resume
+                        </a>
+                    </p>
+                `,
+            });
+
+            console.log("Email sent successfully");
+        } catch (err) {
+            console.log("Email Error:", err);
+        }
+        // ======================================================
+
+        return res.status(200).json({
+            success: true,
+            message: "Application submitted successfully!",
+            application,
+        });
+
     } catch (error) {
-        res.status(500).json({ success: false, message: "Internal application handler failure" });
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
-
-
