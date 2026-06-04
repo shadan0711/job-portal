@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Wrench, Zap, Wind, HardHat, Hammer, Shield, Layers } from 'lucide-react';
+import {  Wrench, Zap, Wind, HardHat, Hammer, Shield, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import CountrySlider from './CountrySlider';

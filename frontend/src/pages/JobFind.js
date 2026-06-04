@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, DollarSign, Briefcase, User, Phone, Mail, FileText, Send, X, Award, Clock, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, DollarSign, Briefcase,  FileText, Send, X, Clock, } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 
