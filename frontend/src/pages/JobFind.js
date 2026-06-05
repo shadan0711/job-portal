@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, DollarSign, Briefcase,  FileText, Send, X, Clock, } from 'lucide-react';
+import { ArrowLeft, MapPin, DollarSign, Briefcase, FileText, Send, X, Clock, } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -10,12 +10,12 @@ const JobFind = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [job, setJob] = useState(null); 
+  const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fileError, setFileError] = useState('');
-  const [hasApplied, setHasApplied] = useState(false); 
-  
+  const [hasApplied, setHasApplied] = useState(false);
+
   const [formData, setFormData] = useState({
     fullName: '', email: '', phone: '', age: '', experience: ''
   });
@@ -30,11 +30,11 @@ const JobFind = () => {
           method: "GET",
           headers: { "Authorization": token ? `Bearer ${token}` : "" }
         });
-        
+
         const data = await response.json();
         if (data.success) {
           setJob(data.job);
-          setHasApplied(data.hasApplied || false); 
+          setHasApplied(data.hasApplied || false);
         }
       } catch (error) {
         console.error("Fetch metrics broken down:", error);
@@ -89,12 +89,21 @@ const JobFind = () => {
       });
       const result = await response.json();
 
+      console.log("API RESPONSE:", result);
+
       if (result.success) {
+         console.log("SUCCESS BLOCK ENTERED");
         toast.success("Application Logged and Admin Notified! 🚀", { id: loadingToast });
         setIsModalOpen(false);
-        setHasApplied(true); 
-        setTimeout(() => navigate('/'), 2000);
+        console.log("MODAL CLOSED");
+        setHasApplied(true);
+         console.log("HAS APPLIED UPDATED");
+        setTimeout(() => {
+    console.log("REDIRECTING");
+    navigate("/");
+  }, 2000);
       } else {
+         console.log("FAILED BLOCK");
         toast.error(result.message || "Execution failure.", { id: loadingToast });
       }
     } catch (error) {
