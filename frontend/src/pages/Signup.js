@@ -26,7 +26,7 @@ const Signup = () => {
     const toastId = toast.loading("Sending OTP... Please wait."); // 🔥 Real-time status update
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/sendotp', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/v1/auth/sendotp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
